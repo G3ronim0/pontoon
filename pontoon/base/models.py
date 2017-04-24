@@ -469,6 +469,16 @@ class LocaleQuerySet(models.QuerySet):
 
 class Locale(AggregatedStats):
     code = models.CharField(max_length=20, unique=True)
+    db_collation = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="""
+        Some of locales require to use different database collation than default ('en_US').
+
+        <strong>Use with caution, because it may brake the search for this locale.</strong>
+        """,
+    )
+
     name = models.CharField(max_length=128)
     plural_rule = models.CharField(
         max_length=128,
@@ -1769,9 +1779,10 @@ class Entity(DirtyFieldsMixin, models.Model):
         # Filter by search parameters
         if search:
             # https://docs.djangoproject.com/en/dev/topics/db/queries/#spanning-multi-valued-relationships
+            search_query = (search, locale.db_collation)
             entities = (
                 Entity.objects.filter(
-                    Q(translation__string__icontains=search, translation__locale=locale) | Q(translation__entity_document__icontains=search),
+                    Q(translation__string__icontains_collate=search_query, translation__locale=locale) | Q(translation__entity_document__icontains=search),
                     pk__in=entities
                 )
                 .distinct()
