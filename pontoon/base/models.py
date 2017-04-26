@@ -30,8 +30,8 @@ from pontoon.sync.vcs.repositories import (
     get_revision,
     update_from_vcs,
     PullFromRepositoryException,
-)
 from pontoon.base import utils
+from pontoon.db import IContainsCollate
 from pontoon.sync import KEY_SEPARATOR
 
 from urlparse import urlparse
