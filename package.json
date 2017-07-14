@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "babel": "6.23.0",
-    "yuglify": "0.1.4"
+    "yuglify": "1.0.0"
   },
   "engines": {
     "node": "6.9.5"
