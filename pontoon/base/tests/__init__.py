@@ -1,3 +1,5 @@
+import codecs
+import inspect
 import json
 import os
 import tempfile
@@ -41,6 +43,21 @@ class PontoonClient(BaseClient):
 
 class TestCase(BaseTestCase):
     client_class = PontoonClient
+
+    @property
+    def samples_root(self):
+        """Path to the folder with artifacts required to test TMX functionality."""
+        file_ = inspect.getfile(self.__class__)
+        tests_root = os.path.dirname(os.path.abspath(file_))
+        return os.path.join(tests_root, 'samples')
+
+    def get_sample(self, file_path):
+        """
+        Retrieve contents of artifact that is required to run/assert a part of test.
+        """
+        with codecs.open(os.path.join(self.samples_root, file_path), 'rU', 'utf-8') as f:
+            return f.read()
+
     def patch(self, *args, **kwargs):
         """
         Wrapper around mock.patch that automatically cleans up the patch

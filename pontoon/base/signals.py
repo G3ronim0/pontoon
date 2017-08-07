@@ -8,12 +8,47 @@ from django.dispatch import receiver
 
 from pontoon.base import errors
 from pontoon.base.models import (
+    Entity,
     Locale,
     Project,
     ProjectLocale,
     TranslatedResource,
     UserProfile,
 )
+
+from pontoon.base.utils import (
+    get_singulars
+)
+
+@receiver(pre_save, sender=Entity)
+def entity_singular_forms(sender, **kwargs):
+    """
+    Generate entity singular forms in order to speed-up processing.
+    """
+    instance = kwargs.get('instance', None)
+
+    if instance.string:
+        instance.string_singulars = ' '.join(get_singulars(instance.string))
+    else:
+        instance.string_singulars = ''
+    if instance.string_plural:
+        instance.string_plural_singulars = ' '.join(get_singulars(instance.string_plural))
+    else:
+        instance.string_plural_singulars = ''
+
+
+@receiver(post_save, sender=Entity)
+def entity_assign_terms(sender, **kwargs):
+    from pontoon.terminology.models import Term
+
+    instance = kwargs.get('instance', None)
+    Term.objects.assign_terms_to_entities([(
+        instance.pk,
+        instance.string,
+        instance.string_singulars,
+        instance.string_plural,
+        instance.string_plural_singulars,
+    )])
 
 
 @receiver(post_delete, sender=ProjectLocale)

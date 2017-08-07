@@ -5,6 +5,7 @@ import os
 import pytz
 import re
 import requests
+import string
 import StringIO
 import tempfile
 import time
@@ -24,6 +25,8 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import trans_real
+
+from pattern.en import singularize
 
 from translate.filters import checks
 from translate.storage import base as storage_base
@@ -653,3 +656,41 @@ def build_translation_memory_file(creation_date, locale_code, entries):
         u'\n\t</body>'
         u'\n</tmx>'
     )
+
+
+def unicode_make_trans(chars, replace_chars):
+    """
+    Unicode objects require to create a map of values to replace.
+    """
+    if len(chars) != len(replace_chars):
+        raise ValueError('Chars and replace_chars have to have the same length.')
+    return {
+        ord(c): ord(replace_chars[i])
+        for i, c in enumerate(chars)
+    }
+
+
+whitespace_trans_table = unicode_make_trans(unicode(string.whitespace), u' ' * len(string.whitespace))
+punctuation_trans_table = unicode_make_trans(unicode(string.punctuation), u' ' * len(string.punctuation))
+
+def get_words(string_words, lower=True):
+    """
+    Retrieve a normalized list of words from string.
+    Removes punctuation etc.
+    """
+    words = (
+        unicode(string_words)
+            .translate(whitespace_trans_table)
+            .translate(punctuation_trans_table)
+    )
+    if lower:
+        words = words.lower()
+    return words.strip().split()
+
+
+def get_singulars(s):
+    """
+    Retrieves an unified list of singular forms from a string (removes whitespaces, punctuation etc.).
+    """
+    stems = map(singularize, get_words(s))
+    return stems

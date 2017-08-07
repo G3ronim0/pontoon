@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path
+from collections import defaultdict
 
 from django.core.management import call_command
 from django_nose.tools import (
@@ -749,6 +750,7 @@ class EntityTests(TestCase):
             'pk': self.main_entity.pk,
             'original': 'Source String',
             'visible': False,
+            'terms': defaultdict(list),
         })
 
     def test_for_project_locale_paths(self):

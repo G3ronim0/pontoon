@@ -13,7 +13,11 @@ from pontoon.base.models import (
     Translation,
     TranslationMemoryEntry
 )
-from pontoon.base.utils import match_attr
+from pontoon.base.utils import (
+    match_attr,
+    get_singulars
+)
+from pontoon.terminology.models import Term
 
 log = logging.getLogger(__name__)
 
@@ -170,6 +174,7 @@ class ChangeSet(object):
         for vcs_entity in self.changes['create_db']:
             # We can't use bulk_create since we need a PK
             entity, created = Entity.objects.get_or_create(**self.get_entity_updates(vcs_entity))
+            self.entity_pre_save(entity)
 
             if created:
                 new_entities.append(entity)
@@ -186,6 +191,13 @@ class ChangeSet(object):
                         fuzzy=vcs_translation.fuzzy
                     ))
 
+        Term.objects.assign_terms_to_entities([(
+            e.pk,
+            e.string,
+            ' '.join(get_singulars(e.string)),
+            e.string_plural,
+            ' '.join(get_singulars(e.string_plural))
+        ) for e in new_entities])
         self.send_notifications(new_entities)
 
     def update_entity_translations_from_vcs(
@@ -308,6 +320,7 @@ class ChangeSet(object):
         if self.changes['update_db']:
             entities_with_translations = self.prefetch_entity_translations()
 
+        updated_entities = []
         for locale_code, db_entity, vcs_entity in self.changes['update_db']:
             for field, value in self.get_entity_updates(vcs_entity, db_entity).items():
                 setattr(db_entity, field, value)
@@ -327,6 +340,14 @@ class ChangeSet(object):
                     prefetched_entity.db_translations,
                     prefetched_entity.db_translations_approved_before_sync
                 )
+            updated_entities.append((
+                db_entity.pk,
+                db_entity.string,
+                ' '.join(get_singulars(db_entity.string)),
+                db_entity.string_plural,
+                ' '.join(get_singulars(db_entity.string_plural))
+            ))
+        Term.objects.assign_terms_to_entities(updated_entities)
 
     def execute_obsolete_db(self):
         (Entity.objects
@@ -389,3 +410,10 @@ class ChangeSet(object):
         ) for t in translations_to_create_translaton_memory_entries_for]
 
         TranslationMemoryEntry.objects.bulk_create(memory_entries)
+
+    def entity_pre_save(self, entity):
+        """
+        All calculations that have to be done before the entity is stored in the database.
+        """
+        entity.string_singulars = get_singulars(entity.string)
+        entity.string_plural_singulars = get_singulars(entity.string_plural_singulars)

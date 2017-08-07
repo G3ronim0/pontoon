@@ -132,6 +132,7 @@ INSTALLED_APPS = (
     'pontoon.projects',
     'pontoon.sync',
     'pontoon.teams',
+    'pontoon.terminology',
 
     # Django contrib apps
     'django.contrib.admin',
@@ -139,6 +140,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 
     # Django sites app is required by django-allauth
     'django.contrib.sites',
@@ -168,6 +170,7 @@ MIDDLEWARE_CLASSES = (
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'session_csrf.CsrfMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
