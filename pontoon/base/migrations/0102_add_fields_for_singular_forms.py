@@ -16,11 +16,8 @@ def update_singulars_fields(apps, schema):
     entities_to_update = []
 
     for entity in Entity.objects.all():
-        if entity.string:
-            entity.string_singulars = ' '.join(get_singulars(entity.string))
-
-        if entity.string_plural:
-            entity.string_plural_singulars = ' '.join(get_singulars(entity.string_plural))
+        entity.string_singulars = ' '.join(get_singulars(entity.string))
+        entity.string_plural_singulars = ' '.join(get_singulars(entity.string_plural))
 
         entities_to_update.append(entity)
 
@@ -37,7 +34,7 @@ def update_singulars_fields(apps, schema):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0100_bug_1390805_create_missing_tm_entries')
+        ('base', '0101_userprofile_custom_homepage')
     ]
 
     operations = [

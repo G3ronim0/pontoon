@@ -16,9 +16,7 @@ from pontoon.base.models import (
     UserProfile,
 )
 
-from pontoon.base.utils import (
-    get_singulars
-)
+from pontoon.base.utils import get_singulars
 
 @receiver(pre_save, sender=Entity)
 def entity_singular_forms(sender, **kwargs):
@@ -27,14 +25,8 @@ def entity_singular_forms(sender, **kwargs):
     """
     instance = kwargs.get('instance', None)
 
-    if instance.string:
-        instance.string_singulars = ' '.join(get_singulars(instance.string))
-    else:
-        instance.string_singulars = ''
-    if instance.string_plural:
-        instance.string_plural_singulars = ' '.join(get_singulars(instance.string_plural))
-    else:
-        instance.string_plural_singulars = ''
+    instance.string_singulars = ' '.join(get_singulars(instance.string))
+    instance.string_plural_singulars = ' '.join(get_singulars(instance.string_plural))
 
 
 @receiver(post_save, sender=Entity)

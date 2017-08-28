@@ -66,7 +66,6 @@ class TermManager(models.Manager):
     @transaction.atomic
     def assign_terms_to_entities(self, entities):
         entity_terms = []
-
         entities_pks = [e[0] for e in entities]
         # Remove existing terms relations.
         EntityTerm.objects.filter(entity__in=entities_pks).delete()
@@ -130,7 +129,7 @@ class TermManager(models.Manager):
         for term_id, term in tbx_terms.items():
             try:
                 db_term = db_terms[term.term_id]
-                db_term.note = term.note
+                db_term.part_of_speech = term.part_of_speech
                 db_term.description = term.description
                 update_terms.append(db_term)
                 updated_records += 1
@@ -140,7 +139,7 @@ class TermManager(models.Manager):
                         term_id=term.term_id,
                         source_term=term.source_text,
                         source_term_singulars=' '.join(get_singulars(term.source_text)),
-                        note=term.note or '',
+                        note=term.part_of_speech or '',
                         description=term.description or '',
                     )
                 )
@@ -154,7 +153,6 @@ class TermManager(models.Manager):
             log.info('Inserted {} new terms.'.format(len(new_terms)))
 
         changed_terms = (new_terms + update_terms)
-        TermTranslation.objects.filter(term__in=changed_terms).delete()
 
         locale_cache = {locale.code: locale for locale in Locale.objects.all()}
         update_translations = []
@@ -223,9 +221,7 @@ class Term(models.Model):
         return self.source_term
 
     def serialize(self, locale=None):
-        if hasattr(self, 'cached_translations'):
-            translations = self.cached_translations
-        elif locale:
+        if locale:
             translations = self.translations.filter(locale=locale)
         else:
             translations = self.translations.all()

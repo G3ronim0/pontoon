@@ -1950,9 +1950,9 @@ class Entity(DirtyFieldsMixin, models.Model):
         """
         Terminology terms for a given locale, ready to be serialized in JSON.
         """
-        terms = getattr(self, 'prefetch_terms', self.terms.all())
-
+        terms = getattr(self, 'prefetched_terms', self.terms.all())
         grouped_terms = defaultdict(list)
+
         for term in terms:
             grouped_terms[term.phrase].append(
                 term.term.serialize(locale)
@@ -2028,8 +2028,11 @@ class Entity(DirtyFieldsMixin, models.Model):
                 .distinct()
             )
 
-        entities = entities.prefetch_resources_translations(locale)
-
+        entities = (
+            entities.prefetch_resources_translations(locale).prefetch_related(
+                Prefetch('terms', to_attr='prefetched_terms'), 'terms__term', 'terms__term__translations'
+            )
+        )
         if exclude:
             entities = entities.exclude(pk__in=exclude)
 

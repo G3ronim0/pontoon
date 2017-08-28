@@ -669,20 +669,19 @@ def unicode_make_trans(chars, replace_chars):
         for i, c in enumerate(chars)
     }
 
+# Translation tables are on the module level to avoid re-calculcation of them during every get_words call.
 
-whitespace_trans_table = unicode_make_trans(unicode(string.whitespace), u' ' * len(string.whitespace))
-punctuation_trans_table = unicode_make_trans(unicode(string.punctuation), u' ' * len(string.punctuation))
+WHITESPACES = unicode_make_trans(unicode(string.whitespace), u' ' * len(string.whitespace))
+# Remove dash from punctuations because that may cause errors in matching terms with dashes.
+PUNCTUATION = unicode_make_trans(unicode(string.punctuation.replace('-', '')), u' ' * (len(string.punctuation) - 1))
+
 
 def get_words(string_words, lower=True):
     """
     Retrieve a normalized list of words from string.
     Removes punctuation etc.
     """
-    words = (
-        unicode(string_words)
-            .translate(whitespace_trans_table)
-            .translate(punctuation_trans_table)
-    )
+    words = unicode(string_words).translate(WHITESPACES).translate(PUNCTUATION)
     if lower:
         words = words.lower()
     return words.strip().split()

@@ -30,7 +30,7 @@ class TestTBXFormatParser(TestCase):
             term_json = term.serialize(None)
             term_json[u'term_id'] = term.term_id
             term_json[u'translations'] = {
-                tt.locale.code:tt.text for tt in term.translations.all()
+                tt.locale.code: tt.text for tt in term.translations.all()
             }
             terms.append(term_json)
         return terms
@@ -48,7 +48,6 @@ class TestTBXFormatParser(TestCase):
                     u'note': u'Noun',
                     u'description': u'Mozilla detected a serious abnormality in its internal data',
                     u'translations': {
-                        u'en-US': u'abnormality',
                         u'pl': u'nieprawidłowość'
                     }
                 },
@@ -58,7 +57,6 @@ class TestTBXFormatParser(TestCase):
                     u'note': u'Noun',
                     u'description': u'Do you want to abort this download',
                     u'translations': {
-                        u'en-US': u'abort',
                         u'pl': u'przerwać'
                     }
                 },
@@ -68,7 +66,6 @@ class TestTBXFormatParser(TestCase):
                     u'note': u'Noun',
                     u'description': u'Special thanks to all of you who help report abuses of Mozilla mark',
                     u'translations': {
-                        u'en-US': u'abuse',
                         u'pl': u'nadużycie'
                     }
                 },
@@ -81,7 +78,6 @@ class TestTBXFormatParser(TestCase):
                         u'to be in violation of these guidelines'
                     ),
                     u'translations': {
-                        u'en-US': u'abuse',
                         u'pl': u'nadużywać'
                     }
                 },

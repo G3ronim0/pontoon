@@ -39,7 +39,8 @@ def retrieve_microsoft_terms((locale_code, ms_locale_code)):
     """
     @retry(stop_max_attempt_number=10)
     def get_tbx_contents():
-        # Because it's an ASP.NET page we have to extract viewstate and eventvalidation from the page first.
+        # Because it's an ASP.NET page, we have to first extract viewstate and eventvalidation
+        # from the page.
         page = BeautifulSoup(requests.get(TERMINOLOGY_URL).content, 'html.parser')
 
         def page_find(*args, **kwargs):
@@ -105,7 +106,7 @@ class Command(BaseCommand):
         # A number of processes that will be spawned to download and parse terms from tbx files.
         parser.add_argument('--workers', type=int, default=10, help='A number of download workers.')
 
-        # A list of locales that user want to import. Fetches all files if the user doesn't pass any parameter.
+        # A list of locales to import. Fetches all files if no parameter is passed.
         parser.add_argument('locales', nargs='*', help='A list of locales to download.')
 
 
@@ -160,16 +161,15 @@ class Command(BaseCommand):
         for locale_terms in terms_per_locale:
             for term in locale_terms:
                 if term.term_id in terms:
-                    terms[term.term_id].translations.update(
-                       term.translations
-                    )
+                    terms[term.term_id].translations.update(term.translations)
                 else:
                     terms[term.term_id] = term
 
-        # filter terms with MS specific phrases
 
         log.info('Loaded %s terms.', (len(terms)))
         log.info('Importing terms to Pontoon')
+
+        # Filter terms with MS specific phrases
         cleaned_terms = {k: v for k, v in terms.items() if not self.ms_term(v.source_text, v.description)}
 
         log.info('Removed %s MS Terms.', len(terms) - len(cleaned_terms))

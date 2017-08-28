@@ -143,6 +143,8 @@ class ChangeSet(object):
             'date_created': db_entity.date_created if db_entity else self.now,
             'order': vcs_entity.order,
             'source': vcs_entity.source,
+            'string_singulars': ' '.join(get_singulars(vcs_entity.string)),
+            'string_plural_singulars': ' '.join(get_singulars(vcs_entity.string_plural))
         }
 
     def send_notifications(self, new_entities):
@@ -174,7 +176,6 @@ class ChangeSet(object):
         for vcs_entity in self.changes['create_db']:
             # We can't use bulk_create since we need a PK
             entity, created = Entity.objects.get_or_create(**self.get_entity_updates(vcs_entity))
-            self.entity_pre_save(entity)
 
             if created:
                 new_entities.append(entity)
@@ -194,9 +195,9 @@ class ChangeSet(object):
         Term.objects.assign_terms_to_entities([(
             e.pk,
             e.string,
-            ' '.join(get_singulars(e.string)),
+            e.string_singulars,
             e.string_plural,
-            ' '.join(get_singulars(e.string_plural))
+            e.string_plural_singulars,
         ) for e in new_entities])
         self.send_notifications(new_entities)
 
@@ -327,6 +328,13 @@ class ChangeSet(object):
 
             if db_entity.is_dirty(check_relationship=True):
                 self.entities_to_update.append(db_entity)
+                updated_entities.append((
+                    db_entity.pk,
+                    db_entity.string,
+                    ' '.join(get_singulars(db_entity.string)),
+                    db_entity.string_plural,
+                    ' '.join(get_singulars(db_entity.string_plural))
+                ))
 
             if locale_code is not None:
                 # Update translations for the entity.
@@ -340,13 +348,7 @@ class ChangeSet(object):
                     prefetched_entity.db_translations,
                     prefetched_entity.db_translations_approved_before_sync
                 )
-            updated_entities.append((
-                db_entity.pk,
-                db_entity.string,
-                ' '.join(get_singulars(db_entity.string)),
-                db_entity.string_plural,
-                ' '.join(get_singulars(db_entity.string_plural))
-            ))
+
         Term.objects.assign_terms_to_entities(updated_entities)
 
     def execute_obsolete_db(self):
@@ -410,10 +412,3 @@ class ChangeSet(object):
         ) for t in translations_to_create_translaton_memory_entries_for]
 
         TranslationMemoryEntry.objects.bulk_create(memory_entries)
-
-    def entity_pre_save(self, entity):
-        """
-        All calculations that have to be done before the entity is stored in the database.
-        """
-        entity.string_singulars = get_singulars(entity.string)
-        entity.string_plural_singulars = get_singulars(entity.string_plural_singulars)

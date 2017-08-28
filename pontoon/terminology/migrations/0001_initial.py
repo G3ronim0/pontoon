@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('base', '0101_add_fields_for_singular_forms'),
+        ('base', '0102_add_fields_for_singular_forms'),
     ]
 
     operations = [

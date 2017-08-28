@@ -1,15 +1,9 @@
 """
 This module tries to implement subset of The TBX Basic format.
 
-First version of the implementation allows to import t
-from The Microsoft Language Portal.
-
-However, there's a lot corner-cases that aren't handled and they will
-be implemented in the future versions.
-
-As the name suggest, TBX is the xml complaint format, that can be parsed by
-the any xml library.
-
+First version of the implementation allows to import terminology from The Microsoft Language Portal.
+However, there's a lot corner-cases that aren't handled and they will be implemented in the future versions.
+As the name suggest, TBX is the xml compliant format, that can be parsed by any xml library.
 We try to wrap all xml structures in python classes to make the code more readable.
 """
 from collections import namedtuple
@@ -21,6 +15,7 @@ class MissingSourceTerm(Exception):
     """
     When Term doesn't contain Language translation for en-GB or en-US.
     """
+
 
 class XMLObject(object):
     """
@@ -50,7 +45,7 @@ class XMLObject(object):
 
 class Translation(XMLObject):
     """
-    Translation of term, contains info about the part of speech string translation in a given language.
+    Translation of term to a given language. Also contains information about the part of speech.
     """
     @property
     def text(self):
@@ -101,7 +96,7 @@ class Language(XMLObject):
 class XMLTerm(XMLObject):
     """
     It describes a term on The Conceptual level. In files provided by Microsoft, this is container for a single term
-    and doesn't contain any top-level informations, all data is stored in specific language sets.
+    and doesn't contain any top-level information, all data is stored in specific language sets.
     """
     @property
     def id(self):
@@ -124,7 +119,7 @@ class XMLTerm(XMLObject):
         That implies that we'll need strings from these locales to perform join between existing entities and terms
         from the new terminology module.
         """
-        lang = self.languages.get('en-GB', self.languages.get('en-US'))
+        lang = self.languages.get('en-US')
         if not lang:
             raise MissingSourceTerm()
 
@@ -139,7 +134,7 @@ class XMLTerm(XMLObject):
         return self.source_term.text
 
     @property
-    def note(self):
+    def part_of_speech(self):
         return self.source_term.part_of_speech
 
     @property
@@ -149,7 +144,10 @@ class XMLTerm(XMLObject):
     @property
     def translations(self):
         trans = {}
-        for lang in self.languages.values():
+        for lang_code, lang in self.languages.items():
+            if lang_code == 'en-US':
+                continue
+
             for term in lang.translations:
                 if term.text:
                     trans.setdefault(lang.lang, []).append(term.text)
@@ -157,17 +155,17 @@ class XMLTerm(XMLObject):
         return trans
 
 
-"""
-TbxTerm represents a small tuple which is easier to serialize, which is useful if you e.g.
-try to parallelize import of terms from a terminology file.
-"""
+# TbxTerm represents a small tuple which is easier to serialize, which is useful if you e.g.
+# try a parallel import of terms from a terminology file.
+
 TbxTerm = namedtuple('TbxTerm', (
     'term_id',
     'source_text',
-    'note',
+    'part_of_speech',
     'description',
     'translations'
 ))
+
 
 def parse_terms(file_contents):
     """
@@ -184,7 +182,7 @@ def parse_terms(file_contents):
             TbxTerm(
                 xml_term.id,
                 xml_term.source_text,
-                xml_term.note or '',
+                xml_term.part_of_speech or '',
                 xml_term.description or '',
                 xml_term.translations
             )
