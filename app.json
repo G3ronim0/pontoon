@@ -33,7 +33,7 @@
    ],
    "env": {
      "SITE_URL": {
-       "description": "Access url to the instance e.g. https://<app name>.herokuapp.com without trailing slash.",
+       "description": "Access url to the instance e.g. https://<app name>.herokuapp.com without a trailing slash.",
        "required": true
      },
      "ADMIN_EMAIL": {
@@ -129,7 +129,7 @@
      }
    ],
    "scripts": {
-     "postdeploy": "./bin/heroku_postdeploy && ./manage.py heroku_deploy_script"
+     "postdeploy": "./bin/heroku_postdeploy && ./manage.py heroku_deploy_setup"
    },
    "formation": {
      "worker": {
