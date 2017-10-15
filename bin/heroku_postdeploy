@@ -21,7 +21,3 @@ done
 
 # Run celery task locally so that it's executed during build
 CELERY_ALWAYS_EAGER="True" ./manage.py sync_projects --no-commit
-
-if [ "$1" -eq "deploy_button" ]; then
-    ./manage.py heroku_deploy_setup
-fi

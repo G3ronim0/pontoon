@@ -129,7 +129,7 @@
      }
    ],
    "scripts": {
-     "postdeploy": "./bin/heroku_postdeploy deploy_button"
+     "postdeploy": "./bin/heroku_postdeploy && ./manage.py heroku_deploy_script"
    },
    "formation": {
      "worker": {
